@@ -5,6 +5,7 @@ import (
     "strconv"
     "strings"
     "math"
+    "bytes"
 )
 
 var chars = "0123456789ABCDEFGHIJKLMNOPQRSTUV"
@@ -21,21 +22,35 @@ func main() {
 }
 
 func GenerateMessage(bits []int, args []float64) string {
-    var bitstring = createBitString(bits, args)
-    
+    var bitstring = createBitString2(bits, args)
     var chunksize = 5
     var chunks = int(math.Ceil(float64(len(bitstring)) / float64(chunksize)))
-    var parts = make([]string, chunks)
+    var parts = make([]byte, chunks)
     for i := 0; i < chunks; i++ {
         var chunk = bitstring[i*chunksize : i*chunksize + chunksize]
         val, _ := strconv.ParseUint(chunk, 2, 32)
-        parts[i] = string(chars[val])
+        parts[i] = chars[val]
+    }
+    return string(parts)
+}
+
+var zerosCache = []string{"", "0", "00", "000", "0000", "00000", "000000", "0000000", "00000000", "000000000", "0000000000"}
+
+func createBitString2(lengths []int, values []float64) string {
+    var buffer bytes.Buffer
+
+    for i, value := range values {
+        var bitstr = strconv.FormatInt(int64(value), 2)
+        var zeros = max(0, lengths[i] - len(bitstr))
+        if zeros > 0 {
+            buffer.WriteString(zerosCache[zeros])            
+        }
+        buffer.WriteString(bitstr)
     }
 
-    var finalstring = strings.Join(parts, "")
-
-    return finalstring
+    return buffer.String()
 }
+
 
 func createBitString(bits []int, args[]float64) string {
     var parts = make([]string, len(args))
