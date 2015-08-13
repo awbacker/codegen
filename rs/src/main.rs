@@ -1,6 +1,6 @@
-// static ALLOWED_CHARS: &'static str = "0123456789ABCDEFGHIJKLMNOPQRSTUV";
-//static ZEROS: &'static str = "00000000000000000000";
-//let zeros = "00000000000000000000000";
+#![allow(dead_code)]
+
+static ALLOWED_CHARS: &'static str = "0123456789ABCDEFGHIJKLMNOPQRSTUV";
 
 fn main() {
     test_generation();
@@ -9,33 +9,17 @@ fn main() {
 fn test_generation() {
    // let expected_value = "01IDH80G7";
     let bits = [ 10, 3, 3, 3, 3, 7, 10, 6 ];
-    let args = [ 1.0, 4.0, 4.0, 6.0, 6.0, 20.0, 8.0, 7.0];
+    let args = [ 1.0, 4.0, 4.0, 6.0, 6.1, 20.0, 8.0, 7.0];
     
-    generate_message(&bits, &args);
+    println!("{}", generate_message_byvec(&args, &bits));
 }
 
-fn generate_message(bits: &[i32], args: &[f64]) {
-    let bit_string = create_bit_string(args, bits);
-    let bit_vec    = create_bit_string_vec(args, bits);
-    println!("{}", bool_vec_to_string(&bit_vec));    
-    println!("{}", bit_string);
-    bool_vec_to_message(&bit_vec);
-}
-
-fn bool_vec_to_message(buffer: &Vec<bool>) {
-    for chunk in buffer.chunks(5) {
-        let value = chunk.iter().fold(0u8, bool_sum);
-    }
-}
-
-fn bool_sum(sum: u8, b: &bool) -> u8 {
-    (sum << 1) + (*b as u8)
-}
-
-fn create_bit_string_vec(values: &[f64], lengths: &[i32]) -> Vec<bool> {
-    // creates the bit-string using a vector of booleans (like a bitvector)
+fn generate_message_byvec(values: &[f64], lengths: &[i32]) -> String {
+    let chars: Vec<char> = ALLOWED_CHARS.chars().collect();
     let total_size = lengths.iter().fold(0, |s, x| s + x);
     let mut buffer: Vec<bool> = Vec::with_capacity(total_size as usize);
+    
+    // creates the bit-string using a vector of booleans (like a bitvector)
     for (value, len) in values.iter().zip(lengths.iter()) {
         let val = format!("{:b}", *value as i32);  // converts to binary string
         let mut needed = len - val.len() as i32;
@@ -47,23 +31,20 @@ fn create_bit_string_vec(values: &[f64], lengths: &[i32]) -> Vec<bool> {
             buffer.push(c == '1');
         }
     }
-    buffer
-}
-
-fn create_bit_string(values: &[f64], lengths: &[i32]) -> String {
-    let mut buffer = String::with_capacity(256);
-    for (value, len) in values.iter().zip(lengths.iter()) {
-        let val = format!("{:b}", *value as i32);  // converts to binary string
-        let mut needed = len - val.len() as i32;
-        while needed > 0 {
-            buffer.push('0');
-            needed -= 1; 
-        }
-        buffer.push_str(&val[..]);
-    }
-    buffer
+    
+    // chunk the buffer into 5 and convert to an int, then grab that char        
+    buffer.chunks(5)
+        .map(|x| x.iter().fold(0u8, bool_sum))
+        .map(|x| chars[x as usize])
+        .collect()
 }
 
 fn bool_vec_to_string(buffer: &Vec<bool>) -> String {
+    // utility for dumping a vector of booleans as a bit string, e.g. 
+    // [false, false, true, false] = "0010"
     buffer.iter().cloned().map(|c| if c { '1' } else { '0' } ).collect::<String>()
+}
+
+fn bool_sum(sum: u8, b: &bool) -> u8 {
+    (sum << 1) + (*b as u8)
 }
