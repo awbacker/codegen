@@ -1,0 +1,4 @@
+[package]
+name = "code_gen_rs"
+version = "0.1.0"
+authors = ["Andrew Backer <andrew.backer@scantrust.com>"]
