@@ -1,4 +1,4 @@
 [root]
-name = "code_gen_rs"
+name = "rstest"
 version = "0.1.0"
 
