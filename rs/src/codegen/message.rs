@@ -1,7 +1,12 @@
-static ALLOWED_CHARS: &'static str = "0123456789ABCDEFGHIJKLMNOPQRSTUV";
+static CHARS: [char; 32] = [
+    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 
+    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+    'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 
+    'U', 'V'
+];
 
-pub fn generate(values: &[f64], lengths: &[i32]) -> String {
-    let chars: Vec<char> = ALLOWED_CHARS.chars().collect();
+pub fn generate(values: &[f64], lengths: &[i32]) -> String 
+{
     let total_size = lengths.iter().fold(0, |s, x| s + x);
     let mut buffer: Vec<bool> = Vec::with_capacity(total_size as usize);
     
@@ -21,7 +26,7 @@ pub fn generate(values: &[f64], lengths: &[i32]) -> String {
     // chunk the buffer into 5 and convert to an int, then grab that char        
     buffer.chunks(5)
         .map(|x| x.iter().fold(0u8, bool_sum))
-        .map(|x| chars[x as usize])
+        .map(|x| CHARS[x as usize])
         .collect()
 }
 
